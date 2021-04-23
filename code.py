@@ -1,60 +1,43 @@
 import board
-import common_functions as cf
 import digitalio
-import random
-import sys
-import time
+import general
+import enp
 
-time.sleep(3)
-actionConfigs, actionPrioritySum, actionLookupTable = cf.prepare("family")
-defaultRunTime = int(actionConfigs.get("DEFAULT", "default_runtime"))
-defaultOffset = int(actionConfigs.get("DEFAULT", "default_offset"))
-print(defaultRunTime, defaultOffset)
+pin1 = digitalio.DigitalInOut(board.GP1)
+pin1.direction = digitalio.Direction.INPUT
+print('pin1, family', pin1.value)
+if pin1.value is True:
+    app = "family"
+    general.run(app)
 
-led = digitalio.DigitalInOut(board.LED)
-led.direction = digitalio.Direction.OUTPUT
+pin2 = digitalio.DigitalInOut(board.GP2)
+pin2.direction = digitalio.Direction.INPUT
+print('pin2, gin', pin2.value)
+if pin2.value is True:
+    app = "gin"
+    general.run(app)
 
-scriptStartTime = time.time()
-realRunTime = defaultRunTime + random.randint(-defaultOffset, defaultOffset)
-print("adding random offset, realRunTime:", realRunTime)
-timeout = time.time() + 60 * realRunTime
+pin3 = digitalio.DigitalInOut(board.GP3)
+pin3.direction = digitalio.Direction.INPUT
+print('pin3, match masters', pin3.value)
+if pin3.value is True:
+    app = "match_masters"
+    general.run(app)
 
-while True:
-    if time.time() > timeout:
-        break
+pin4 = digitalio.DigitalInOut(board.GP4)
+pin4.direction = digitalio.Direction.INPUT
+print('pin4, club vegas', pin4.value)
+if pin4.value is True:
+    app = "club_vegas"
+    general.run(app)
 
-    # random action
-    actionSwitch = random.randint(0, actionPrioritySum - 1)
+pin5 = digitalio.DigitalInOut(board.GP5)
+pin5.direction = digitalio.Direction.INPUT
+print('pin5, coin', pin5.value)
+if pin5.value is True:
+    app = "coin"
+    general.run(app)
 
-    # fetch action name
-    actionName = cf.get_config_name(actionLookupTable, actionSwitch)
-    sleepBase = int(actionConfigs.get(actionName, "sleep_base"))
-    sleepFactor = int(actionConfigs.get(actionName, "sleep_factor"))
+print('pin null, enp')
+enp.run()
 
-    scriptRunTime = time.time() - scriptStartTime
-
-    print(int(scriptRunTime),
-          '\tactionSwitch\t', actionConfigs.get(actionName, "description"), end=' \t[ ', flush=True)
-
-    clickCount = int(actionConfigs.get(actionName, "click"))
-    for clickNr in range(clickCount):
-        print("click", clickNr, end=' ', flush=True)
-        cf.config_click_at(actionConfigs, actionName, led)
-        sleepOffset = random.randint(- defaultOffset * sleepFactor, defaultOffset * sleepFactor)
-        time.sleep((sleepBase + sleepOffset) / 1000.0)
-
-    panCount = int(actionConfigs.get(actionName, "pan"))
-    for panNr in range(panCount):
-        print("pan", panNr, end=' ', flush=True)
-        cf.config_pan_in_safe_area(actionConfigs, actionName, led)
-        sleepOffset = random.randint(- defaultOffset * sleepFactor, defaultOffset * sleepFactor)
-        time.sleep((sleepBase + sleepOffset) / 1000.0)
-
-    closeCount = int(actionConfigs.get(actionName, "close"))
-    for closeNr in range(closeCount):
-        print("close", closeNr, end=' ', flush=True)
-        cf.config_click_return(actionConfigs, actionName, led)
-        sleepOffset = random.randint(- defaultOffset * sleepFactor, defaultOffset * sleepFactor)
-        time.sleep((sleepBase + sleepOffset) / 1000.0)
-
-    sys.stdout.write("]\n")  # move the cursor to the next line
