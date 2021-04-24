@@ -11,7 +11,8 @@ def run(app):
     actionConfigs, actionPrioritySum, actionLookupTable = cf.prepare(app)
     defaultRunTime = int(actionConfigs.get("DEFAULT", "default_runtime"))
     defaultOffset = int(actionConfigs.get("DEFAULT", "default_offset"))
-    print(defaultRunTime, defaultOffset)
+    randomAction = int(actionConfigs.get("DEFAULT", "random_action"))
+    print(defaultRunTime, defaultOffset, randomAction)
 
     led = digitalio.DigitalInOut(board.LED)
     led.direction = digitalio.Direction.OUTPUT
@@ -21,12 +22,16 @@ def run(app):
     print("adding random offset, realRunTime:", realRunTime)
     timeout = time.time() + 60 * realRunTime
 
+    actionSwitch = 0
     while True:
         if time.time() > timeout:
             break
 
         # random action
-        actionSwitch = random.randint(0, actionPrioritySum - 1)
+        if randomAction is 1:
+            actionSwitch = random.randint(0, actionPrioritySum - 1)
+        else:
+            actionSwitch = (actionSwitch + 1) % actionPrioritySum
 
         # fetch action name
         actionName = cf.get_config_name(actionLookupTable, actionSwitch)
@@ -56,6 +61,13 @@ def run(app):
         for closeNr in range(closeCount):
             print("close", closeNr, end=' ', flush=True)
             cf.config_click_return(actionConfigs, actionName, led)
+            sleepOffset = random.randint(- defaultOffset * sleepFactor, defaultOffset * sleepFactor)
+            time.sleep((sleepBase + sleepOffset) / 1000.0)
+
+        closeCount = int(actionConfigs.get(actionName, "close2"))
+        for closeNr in range(closeCount):
+            print("close2", closeNr, end=' ', flush=True)
+            cf.config_click_return2(actionConfigs, actionName, led)
             sleepOffset = random.randint(- defaultOffset * sleepFactor, defaultOffset * sleepFactor)
             time.sleep((sleepBase + sleepOffset) / 1000.0)
 

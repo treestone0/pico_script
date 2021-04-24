@@ -79,6 +79,17 @@ def config_click_return(action_configs, action_name, led):
     blick(led, 3, 0.1)
 
 
+def config_click_return2(action_configs, action_name, led):
+    x = int(action_configs.get(action_name, "close2_x"))
+    y = int(action_configs.get(action_name, "close2_y"))
+    default_offset = int(action_configs.get(action_name, "default_offset"))
+    random_shift1 = random.randint(-default_offset, default_offset)
+    random_shift2 = random.randint(-default_offset, default_offset)
+    touch = Touch(usb_hid.devices, scree_width, scree_height)
+    touch.click_at(x + random_shift1, y + random_shift2)
+    blick(led, 3, 0.1)
+
+
 def pan_in_safe_area(min_x, min_y, max_x, max_y, input_steps=40, dist_threshold=300):
     start_x = random.randint(min(min_x, max_x), max(min_x, max_x))
     start_y = random.randint(min(min_y, max_y), max(min_y, max_y))
