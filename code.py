@@ -39,5 +39,5 @@ if pin5.value is True:
     general.run(app)
 
 print('pin null, enp')
-enp.run()
-
+app = "enp"
+general.run(app)
